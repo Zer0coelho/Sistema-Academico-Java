@@ -1,233 +1,93 @@
-# Sistema Acadêmico - Java + Swing + MySQL
+📚 Sistema Acadêmico — UNICID
+Sistema desktop de gerenciamento acadêmico desenvolvido em Java + Swing com persistência em MySQL, criado como projeto da disciplina de Programação Orientada a Objetos da UNICID.
 
-Sistema acadêmico desktop desenvolvido em Java utilizando Swing para interface gráfica e MySQL para persistência de dados.
+🗂️ Funcionalidades
 
-O projeto foi desenvolvido com foco em Programação Orientada a Objetos (POO), CRUD completo, integração com banco de dados e interface gráfica utilizando `JTabbedPane`.
+Cadastro de alunos com RGM, dados pessoais, endereço e vínculo a curso
+Gestão de notas e faltas por disciplina e semestre
+Boletim com situação por disciplina (Aprovado / Reprovado / Rep. Falta), cabeçalho colorido por situação e exibição do período selecionado
+Consulta, alteração e exclusão de alunos e registros de notas
+Validações de entrada: RGM numérico, CPF único, data de nascimento via calendário nativo (JSpinner), máscaras para CPF e celular
+Período (Matutino / Vespertino / Noturno) selecionado na interface — não é persistido no banco
 
----
 
-# Tecnologias Utilizadas
-
-* Java
-* Java Swing
-* JDBC
-* MySQL
-* Eclipse IDE
-
----
-
-# Funcionalidades
-
-## Cadastro de Alunos
-
-* Cadastro de alunos
-* Alteração de dados
-* Consulta por RGM
-* Exclusão de alunos
-
-## Gerenciamento de Cursos
-
-* Associação do aluno a um curso
-* Seleção de campus
-* Seleção de período
-
-## Notas e Faltas
-
-* Cadastro de notas
-* Cadastro de faltas
-* Alteração de registros
-* Exclusão de registros
-* Consulta por aluno
-
-## Boletim
-
-* Visualização completa do histórico acadêmico
-* Situação do aluno:
-
-  * Aprovado
-  * Reprovado
-  * Reprovado por falta
-
----
-
-# Estrutura do Projeto
-
-```text
-src/
+🏗️ Estrutura do Projeto
+SistemaAcademico/
 │
-├── Aluno.java
-├── AlunoDAO.java
-├── Curso.java
-├── CursoDAO.java
-├── NotaFalta.java
-├── NotaFaltaDAO.java
-├── ConexaoBD.java
-└── SistemaAcademico.java
-```
+├── SistemaAcademico.java   # Classe principal — JFrame com menus e abas (Swing)
+│
+├── model/
+│   ├── Aluno.java          # Entidade Aluno
+│   ├── Curso.java          # Entidade Curso
+│   └── NotaFalta.java      # Entidade Nota/Falta por disciplina
+│
+├── dao/
+│   ├── AlunoDAO.java       # CRUD de alunos (com conversão de datas BR ↔ SQL)
+│   ├── CursoDAO.java       # Listagem e busca de cursos
+│   └── NotaFaltaDAO.java   # CRUD de notas e faltas
+│
+├── util/
+│   └── ConexaoBD.java      # Conexão com MySQL via JDBC
+│
+└── Novo-novo.sql           # Script de criação do banco de dados
 
----
+Os arquivos estão atualmente no pacote padrão (sem subpastas). A estrutura acima é uma sugestão de organização.
 
-# Estrutura do Banco de Dados
 
-## Banco
+🗃️ Banco de Dados
+Schema
+sqlcurso (id PK, nome, campus)
 
-```sql
-CREATE DATABASE sistema_academico;
-```
+aluno (rgm PK, nome, data_nascimento, cpf UNIQUE, email,
+       endereco, municipio, uf, celular, id_curso FK → curso)
 
----
+nota_falta (id PK, rgm_aluno FK → aluno, disciplina,
+            semestre, nota, faltas)
 
-## Tabela Curso
+A exclusão de um aluno remove suas notas e faltas em cascata (ON DELETE CASCADE).
+O campo periodo não existe no banco — é gerenciado apenas na interface.
 
-```sql
-CREATE TABLE curso (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    nome VARCHAR(100) NOT NULL,
-    campus VARCHAR(100),
-    periodo VARCHAR(50)
-);
-```
 
----
+⚙️ Pré-requisitos
+FerramentaVersão mínimaJava (JDK)11MySQL Server8.0MySQL Connector/J8.x (mysql-connector-java-8.x.x.jar)IDE (opcional)Eclipse / IntelliJ IDEA
 
-## Tabela Aluno
+🚀 Como Executar
+1. Criar o banco de dados
+Abra o MySQL Workbench (ou outro cliente) e execute o script:
+Novo-novo.sql
+Isso cria o banco sistema_academico com as três tabelas e insere os cursos iniciais.
+2. Configurar a conexão
+Abra ConexaoBD.java e ajuste as credenciais:
+javaprivate static final String URL     = "jdbc:mysql://localhost:3306/sistema_academico";
+private static final String USUARIO = "root";       // seu usuário MySQL
+private static final String SENHA   = "sua_senha";  // sua senha MySQL
+3. Adicionar o driver JDBC ao Build Path
+Baixe o mysql-connector-java-8.x.x.jar e adicione ao projeto:
 
-```sql
-CREATE TABLE aluno (
-    rgm VARCHAR(20) PRIMARY KEY,
-    nome VARCHAR(100) NOT NULL,
-    data_nascimento VARCHAR(20),
-    cpf VARCHAR(20),
-    email VARCHAR(100),
-    endereco VARCHAR(200),
-    municipio VARCHAR(100),
-    uf VARCHAR(2),
-    celular VARCHAR(20),
-    id_curso INT,
-    FOREIGN KEY (id_curso) REFERENCES curso(id)
-);
-```
+Eclipse: clique com o botão direito no projeto → Build Path → Add External Archives
+IntelliJ: File → Project Structure → Modules → Dependencies → + → JARs
 
----
+4. Compilar e rodar
+Execute a classe SistemaAcademico (método main).
 
-## Tabela Nota/Falta
+🖥️ Interface
+A janela principal possui quatro abas:
+AbaConteúdoDados PessoaisRGM, nome, data de nascimento, CPF, e-mail, endereço, UF, celularCursoSeleção de curso, campus e período (Matutino/Vespertino/Noturno)Notas e FaltasDisciplina, semestre, nota e faltas — tabela com histórico do alunoBoletimResumo por disciplina com situação final colorida por aprovação
+O menu superior (Aluno e Notas e Faltas) oferece atalhos de teclado:
 
-```sql
-CREATE TABLE nota_falta (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    rgm_aluno VARCHAR(20),
-    disciplina VARCHAR(100),
-    semestre VARCHAR(20),
-    nota DOUBLE,
-    faltas INT,
-    FOREIGN KEY (rgm_aluno)
-        REFERENCES aluno(rgm)
-        ON DELETE CASCADE
-);
-```
+Ctrl+S — Salvar aluno
+Shift+R — Sair
+Ctrl+A — Alterar nota selecionada
 
----
 
-# Configuração do Banco de Dados
+📐 Decisões de Design
 
-Na classe `ConexaoBD.java`, configure:
+Sem surrogate keys em aluno: o RGM é a chave primária natural (String).
+Período fora do banco: o atributo periodo foi removido do schema para evitar redundância; o usuário seleciona na interface e o valor aparece apenas no boletim.
+Conversão de datas: AlunoDAO converte entre dd/MM/yyyy (interface) e java.sql.Date (banco), com setLenient(false) para rejeitar datas inválidas como 32/13/2000.
+Cascata: a FK nota_falta.rgm_aluno → aluno.rgm tem ON DELETE CASCADE, garantindo integridade sem lógica manual na camada Java.
+Segunda linha de defesa para CPF: além da verificação em Java, a coluna cpf tem UNIQUE no banco; SQLIntegrityConstraintViolationException é capturada como fallback.
 
-```java
-private static final String URL =
-"jdbc:mysql://localhost:3306/sistema_academico?useSSL=false&serverTimezone=UTC";
 
-private static final String USUARIO = "root";
-private static final String SENHA = "SUA_SENHA";
-```
-
----
-
-# Dependência JDBC
-
-É necessário adicionar o MySQL Connector/J ao projeto.
-
-Download oficial:
-
-https://dev.mysql.com/downloads/connector/j/
-
-Após baixar:
-
-```text
-Build Path
-→ Configure Build Path
-→ Libraries
-→ Add External JARs
-```
-
-Selecione o arquivo `.jar` do connector.
-
----
-
-# Como Executar
-
-1. Clone ou baixe o projeto
-2. Crie o banco de dados MySQL
-3. Execute os scripts SQL
-4. Configure usuário e senha do banco
-5. Adicione o MySQL Connector/J no projeto
-6. Execute a classe:
-
-```text
-SistemaAcademico.java
-```
-
----
-
-# Interface do Sistema
-
-O sistema possui 4 abas principais:
-
-* Dados Pessoais
-* Curso
-* Notas e Faltas
-* Boletim
-
-Também possui:
-
-* Menu superior
-* CRUD completo
-* JTable
-* Máscaras de campos
-* Mensagens de validação
-
----
-
-# Conceitos Aplicados
-
-* Programação Orientada a Objetos
-* Encapsulamento
-* JDBC
-* DAO (Data Access Object)
-* Swing
-* JTable
-* JTabbedPane
-* PreparedStatement
-* Relacionamento entre tabelas
-* CRUD
-
----
-
-# Melhorias Futuras
-
-* Login de usuários
-* Relatórios em PDF
-* Exportação para Excel
-* Uso de LocalDate
-* Arquitetura MVC
-* Uso de Maven
-* Melhor tratamento de exceções
-* Filtro de cursos por campus
-* Dashboard acadêmico
-
----
-
-# Autor
-
-Projeto desenvolvido para fins acadêmicos na disciplina de Programação Orientada a Objetos.
-
-Java + Swing + MySQL
+👥 Autores
+Projeto desenvolvido para a disciplina de Programação Orientada a Objetos — UNICID.
